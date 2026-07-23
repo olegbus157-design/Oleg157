@@ -64,8 +64,7 @@
     { id: "p4", type: "prod", name: "Квантовая добыча", icon: "⚛️", cost: 5000000, mult: 3, desc: "Вся добыча ×3" },
   ];
 
-  // Register your app at https://adsgram.ai and replace with your real Block ID.
-  const ADSGRAM_BLOCK_ID = "int-00000";
+  const ADSGRAM_BLOCK_ID = "39503";
   let adController = null;
   if (window.Adsgram) {
     try { adController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID }); } catch (e) {}
