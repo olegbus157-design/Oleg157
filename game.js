@@ -64,6 +64,13 @@
     { id: "p4", type: "prod", name: "Квантовая добыча", icon: "⚛️", cost: 5000000, mult: 3, desc: "Вся добыча ×3" },
   ];
 
+  // Register your app at https://adsgram.ai and replace with your real Block ID.
+  const ADSGRAM_BLOCK_ID = "int-00000";
+  let adController = null;
+  if (window.Adsgram) {
+    try { adController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID }); } catch (e) {}
+  }
+
   const SAVE_KEY = "idleMinerSave_v1";
   const OFFLINE_CAP_MS = 4 * 60 * 60 * 1000; // 4 hours
   const OFFLINE_RATE = 0.5; // 50% efficiency while away
@@ -83,6 +90,7 @@
       owned,
       autoOwned,
       bought,
+      boostUntil: 0,
       lastSave: Date.now(),
     };
   }
@@ -140,6 +148,14 @@
     return mult;
   }
 
+  function isBoostActive() {
+    return Date.now() < (state.boostUntil || 0);
+  }
+
+  function boostMult() {
+    return isBoostActive() ? 2 : 1;
+  }
+
   function minerCost(minerDef) {
     const owned = state.owned[minerDef.id] || 0;
     return Math.ceil(minerDef.baseCost * Math.pow(1.15, owned));
@@ -155,7 +171,7 @@
     MINERS.forEach((m) => {
       total += m.baseProd * (state.owned[m.id] || 0);
     });
-    return total * prodUpgradeMult() * prestigeMult();
+    return total * prodUpgradeMult() * prestigeMult() * boostMult();
   }
 
   function autoProduction() {
@@ -171,7 +187,7 @@
   }
 
   function clickPower() {
-    return 1 * clickUpgradeMult() * prestigeMult();
+    return 1 * clickUpgradeMult() * prestigeMult() * boostMult();
   }
 
   function canPrestige() {
@@ -202,6 +218,7 @@
   const gemsAmountEl = document.getElementById("gems-amount");
   const clickPowerEl = document.getElementById("click-power");
   const oreRock = document.getElementById("ore-rock");
+  const boostBtn = document.getElementById("boost-btn");
   const floatLayer = document.getElementById("float-layer");
   const minersList = document.getElementById("miners-list");
   const autoList = document.getElementById("auto-list");
@@ -220,6 +237,19 @@
     goldRateEl.textContent = "+" + formatNumber(totalProduction()) + "/сек";
     gemsAmountEl.textContent = formatNumber(state.gems);
     clickPowerEl.textContent = formatNumber(clickPower());
+  }
+
+  function updateBoostButton() {
+    if (isBoostActive()) {
+      const remain = state.boostUntil - Date.now();
+      const m = Math.floor(remain / 60000);
+      const s = Math.floor((remain % 60000) / 1000);
+      boostBtn.textContent = "🚀 Буст активен: " + m + ":" + String(s).padStart(2, "0");
+      boostBtn.classList.add("boost-active");
+    } else {
+      boostBtn.textContent = "🚀 Реклама: ×2 добыча на 30 мин";
+      boostBtn.classList.remove("boost-active");
+    }
   }
 
   function renderMiners() {
@@ -309,6 +339,7 @@
 
   function renderAll() {
     updateTopbar();
+    updateBoostButton();
     renderMiners();
     renderAutoClickers();
     renderUpgrades();
@@ -399,6 +430,31 @@
 
   oreRock.addEventListener("click", (e) => handleTap(e.clientX, e.clientY));
 
+  function watchBoostAd() {
+    if (isBoostActive()) return;
+    if (!adController) {
+      if (tg && tg.showAlert) tg.showAlert("Реклама временно недоступна, попробуй позже.");
+      else alert("Реклама временно недоступна, попробуй позже.");
+      return;
+    }
+    boostBtn.disabled = true;
+    adController
+      .show()
+      .then(() => {
+        state.boostUntil = Date.now() + 30 * 60 * 1000;
+        haptic("heavy");
+        updateBoostButton();
+        updateTopbar();
+        saveState();
+      })
+      .catch(() => {})
+      .finally(() => {
+        boostBtn.disabled = false;
+      });
+  }
+
+  boostBtn.addEventListener("click", watchBoostAd);
+
   prestigeBtn.addEventListener("click", doPrestige);
 
   // ---------------------------------------------------------------
@@ -451,6 +507,7 @@
     const gained = totalProduction() * delta;
     if (gained > 0) addGold(gained);
     updateTopbar();
+    updateBoostButton();
     refreshActiveList();
   }
 

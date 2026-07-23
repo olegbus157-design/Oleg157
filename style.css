@@ -252,6 +252,30 @@ main.view.active { display: flex; flex-direction: column; }
 
 .click-power span { color: var(--amber-bright); font-weight: 800; }
 
+.boost-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1a0f00;
+  background: linear-gradient(135deg, var(--amber-bright), var(--amber));
+  box-shadow: 0 4px 16px rgba(255,176,32,0.4);
+  cursor: pointer;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+}
+
+.boost-btn:active { transform: scale(0.96); }
+
+.boost-btn.boost-active {
+  background: linear-gradient(135deg, var(--green), #4bcf72);
+  color: #0d2413;
+  box-shadow: 0 4px 16px rgba(110,224,138,0.4);
+  cursor: default;
+}
+
+.boost-btn:disabled { opacity: 0.6; }
+
 /* ---------- Lists (shop / upgrades) ---------- */
 .list {
   display: flex;
