@@ -229,7 +229,7 @@
       const owned = state.owned[m.id] || 0;
       const afford = state.gold >= cost;
       const card = document.createElement("div");
-      card.className = "item-card" + (afford ? "" : " disabled");
+      card.className = "item-card card-miner" + (afford ? "" : " disabled");
       card.innerHTML =
         '<div class="item-icon">' + m.icon + "</div>" +
         '<div class="item-info">' +
@@ -251,7 +251,7 @@
       const afford = state.gold >= cost;
       const prod = a.cps * clickPower();
       const card = document.createElement("div");
-      card.className = "item-card" + (afford ? "" : " disabled");
+      card.className = "item-card card-auto" + (afford ? "" : " disabled");
       card.innerHTML =
         '<div class="item-icon">' + a.icon + "</div>" +
         '<div class="item-info">' +
@@ -270,8 +270,9 @@
     UPGRADES.forEach((u) => {
       const bought = state.bought[u.id];
       const afford = state.gold >= u.cost;
+      const typeClass = u.type === "click" ? "card-click" : "card-prod";
       const card = document.createElement("div");
-      card.className = "item-card" + (bought ? " bought" : afford ? "" : " disabled");
+      card.className = "item-card " + typeClass + (bought ? " bought" : afford ? "" : " disabled");
       card.innerHTML =
         '<div class="item-icon">' + u.icon + "</div>" +
         '<div class="item-info">' +
