@@ -450,6 +450,18 @@
     const gained = totalProduction() * delta;
     if (gained > 0) addGold(gained);
     updateTopbar();
+    refreshActiveList();
+  }
+
+  function refreshActiveList() {
+    const active = document.querySelector(".view.active");
+    if (!active) return;
+    if (active.id === "view-shop") {
+      renderMiners();
+      renderAutoClickers();
+    } else if (active.id === "view-upgrades") {
+      renderUpgrades();
+    }
   }
   setInterval(tick, 200);
   setInterval(saveState, 5000);
